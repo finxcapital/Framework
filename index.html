@@ -99,35 +99,48 @@
   .field input[type="date"] { color-scheme: dark; cursor: pointer; }
 
   .custom-select { position: relative; user-select: none; }
-  .select-selected { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #fff; transition: all .2s; font-size: 14px; }
-  .select-selected:after { content: ''; border: solid var(--muted); border-width: 0 2px 2px 0; display: inline-block; padding: 3px; transform: rotate(45deg); transition: transform 0.2s; }
+  
+  .select-selected { 
+    background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: var(--radius-sm); 
+    padding: 10px 30px 10px 14px; cursor: pointer; color: #fff; transition: all .2s; font-size: 14px; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; display: block;
+  }
+  .select-selected:after { 
+    content: ''; border: solid var(--muted); border-width: 0 2px 2px 0; display: inline-block; padding: 3px; 
+    transform: translateY(-50%) rotate(45deg); transition: transform 0.2s, border-color 0.2s; position: absolute; right: 14px; top: 45%; 
+  }
   .select-selected.select-arrow-active { border-color: var(--accent); background: rgba(0, 101, 255, 0.05); box-shadow: 0 0 0 3px var(--accent-dim); }
-  .select-selected.select-arrow-active:after { transform: rotate(-135deg); border-color: var(--accent); }
+  .select-selected.select-arrow-active:after { transform: translateY(-30%) rotate(-135deg); border-color: var(--accent); }
+  
   .select-items { 
     position: absolute; 
     background: rgba(20, 33, 65, 0.85); 
-    
     backdrop-filter: blur(24px) saturate(180%); 
     -webkit-backdrop-filter: blur(24px) saturate(180%); 
-    
     border: 1px solid var(--border-hi); 
     box-shadow: 0 8px 32px rgba(0,0,0,0.6); 
     border-radius: var(--radius-sm); 
-    top: 100%; 
-    left: 0; 
-    right: 0; 
-    z-index: 9999; 
-    margin-top: 8px; 
-    overflow: hidden; 
-    opacity: 0; 
-    transform: translateY(-10px); 
-    pointer-events: none; 
+    top: 100%; left: 0; right: 0; z-index: 9999; 
+    margin-top: 8px; overflow: hidden; opacity: 0; 
+    transform: translateY(-10px); pointer-events: none; 
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
   }
   .select-items.select-show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .select-items div { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff; transition: background .2s; font-size: 14px; }
+  .select-items div { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff; transition: all .2s; font-size: 14px; position: relative; }
   .select-items div:last-child { border-bottom: none; }
   .select-items div:hover { background: rgba(0, 101, 255, 0.2); color: var(--finx-bright); padding-left: 18px; }
+
+  .select-items div.multi-selected {
+    background: rgba(0, 101, 255, 0.15);
+    color: var(--finx-yellow);
+    font-weight: 600;
+  }
+  .select-items div.multi-selected::after {
+    content: '✔';
+    position: absolute;
+    right: 14px;
+    color: var(--finx-yellow);
+  }
 
   .subgroup { background: rgba(0,0,0,.15); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 6px; }
   .subgroup-title { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
@@ -395,6 +408,47 @@ function setupCustomSelect(containerId, inputId, onSelectCallback) {
   });
 }
 
+function setupMultiSelect(containerId, inputId) {
+  const container = document.getElementById(containerId);
+  const selected = container.querySelector('.select-selected');
+  const items = container.querySelector('.select-items');
+  const hiddenInput = document.getElementById(inputId);
+  const options = items.querySelectorAll('div');
+
+  selected.addEventListener('click', function(e) {
+    e.stopPropagation();
+    closeAllSelect(this);
+    items.classList.toggle('select-show');
+    this.classList.toggle('select-arrow-active');
+  });
+
+  options.forEach(opt => {
+    opt.addEventListener('click', function(e) {
+      e.stopPropagation();
+      this.classList.toggle('multi-selected');
+
+      const selectedDivs = items.querySelectorAll('div.multi-selected');
+      const vals = [];
+      const texts = [];
+      
+      selectedDivs.forEach(d => {
+        vals.push(d.dataset.value);
+        texts.push(d.innerText);
+      });
+
+      if (vals.length === 0) {
+        selected.innerText = 'Selecione...';
+        hiddenInput.value = '';
+      } else {
+        selected.innerText = texts.join(', ');
+        hiddenInput.value = vals.join(', ');
+      }
+
+      hiddenInput.dispatchEvent(new Event('input'));
+    });
+  });
+}
+
 function closeAllSelect(elmnt) {
   const items = document.querySelectorAll('.select-items');
   const selecteds = document.querySelectorAll('.select-selected');
@@ -412,7 +466,7 @@ setupCustomSelect('selectSupervisor', 'inputSupervisor', (selectedOpt) => {
   emailField.dispatchEvent(new Event('input'));
 });
 
-setupCustomSelect('selectEquipe', 'inputEquipe');
+setupMultiSelect('selectEquipe', 'inputEquipe');
 
 
 document.addEventListener('input', function (event) {
@@ -707,6 +761,8 @@ function resetForm() {
     
     document.getElementById('displaySupervisor').textContent = 'Selecione...';
     document.getElementById('displayEquipe').textContent = 'Selecione...';
+    
+    document.querySelectorAll('#selectEquipe .select-items div').forEach(d => d.classList.remove('multi-selected'));
     
     const inputEmail = document.getElementById('inputEmailGerente');
     inputEmail.style.display = 'none';
