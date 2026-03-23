@@ -241,7 +241,7 @@
         <div class="custom-select" id="selectEquipe">
           <div class="select-selected" id="displayEquipe">Selecione...</div>
           <div class="select-items">
-            <div data-value="Movida 100%">Movida 100%</div>
+            <div data-value="Movida">Movida</div>
             <div data-value="Condicional">Condicional</div>
             <div data-value="Localiza">Localiza</div>
           </div>
@@ -278,7 +278,7 @@
         <div class="subgroup" style="margin-top:16px">
           <div class="subgroup-title">1.2 Eficiência por Esteira (%) - Preencha a de foco</div>
           <div class="grid-3">
-            <div class="field"><label>Movida 100%</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaMovida" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
+            <div class="field"><label>Movida</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaMovida" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
             <div class="field"><label>Condicional</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaCondicional" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
             <div class="field"><label>Localiza</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaLocaliza" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
           </div>
@@ -293,16 +293,17 @@
             </div>
           </div>
           <div class="subgroup" style="margin-top:0;">
-            <div class="subgroup-title">1.5 Total de Indicações</div>
-            <div class="field mono"><label>Total</label><input type="number" name="totalIndicacoes" class="track-single" placeholder="0" min="0"></div>
+            <div class="subgroup-title">1.4 Meta Relógio (Acumulado)</div>
+            <div class="grid-2">
+              <div class="field mono"><label>Orçado</label><input type="text" name="metaRelogioOrcado" class="track-single" placeholder="ex: 80.000,00"></div>
+              <div class="field mono"><label>Realizado</label><input type="text" name="metaRelogioRealizado" class="track-single" placeholder="ex: 72.500,00"></div>
+            </div>
           </div>
         </div>
+        
         <div class="subgroup" style="margin-top:16px">
-          <div class="subgroup-title">1.4 Meta Relógio (Acumulado)</div>
-          <div class="grid-2">
-            <div class="field mono"><label>Orçado</label><input type="text" name="metaRelogioOrcado" class="track-single" placeholder="ex: 80.000,00"></div>
-            <div class="field mono"><label>Realizado</label><input type="text" name="metaRelogioRealizado" class="track-single" placeholder="ex: 72.500,00"></div>
-          </div>
+          <div class="subgroup-title">1.5 Total de Indicações</div>
+          <div class="field mono"><label>Total</label><input type="number" name="totalIndicacoes" class="track-single" placeholder="0" min="0"></div>
         </div>
       </div>
     </div>
