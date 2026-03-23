@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Comercial — Supervisor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0e0f11;
+    --surface:   #161719;
+    --border:    #2a2c30;
+    --border-hi: #3d4045;
+    --text:      #e8e9ea;
+    --muted:     #6b7280;
+    --accent:    #4f8ef7;
+    --accent-dim:#1e3a6e;
+    --green:     #22c55e;
+    --green-dim: #14532d;
+    --amber:     #f59e0b;
+    --amber-dim: #451a03;
+    --red:       #ef4444;
+    --red-dim:   #450a0a;
+    --mono:      'DM Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+    --radius:    10px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px; opacity: .35; pointer-events: none; z-index: 0;
+  }
+  .shell { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .header { margin-bottom: 36px; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
+  .header-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+  .header-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .meta-row   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .meta-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; align-items: start; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media(max-width:520px){ .meta-row, .meta-row-2, .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; transition: border-color .2s; }
+  .section:focus-within { border-color: var(--border-hi); }
+  .section-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,.02); }
+  .section-num { font-family: var(--mono); font-size: 11px; color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; }
+  .section-title { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  .section-badge { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; }
+  .section-body { padding: 18px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .field input, .field textarea { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--sans); font-size: 14px; padding: 9px 12px; outline: none; transition: border-color .15s, background .15s; width: 100%; box-sizing: border-box;}
+  .field input:focus, .field textarea:focus { border-color: var(--accent); background: rgba(79,142,247,.06); }
+  .field input::placeholder, .field textarea::placeholder { color: var(--muted); opacity: .6; }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .field.mono input { font-family: var(--mono); }
+  .field input[type="date"] { color-scheme: dark; }
+  .field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.65) brightness(1.3); cursor: pointer; }
+
+  .subgroup { background: rgba(255,255,255,.02); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 4px; }
+  .subgroup-title { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .subgroup-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .input-suffix { position: relative; }
+  .input-suffix input { padding-right: 32px; }
+  .input-suffix::after { content: attr(data-suffix); position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+
+  .check-group { display: flex; flex-direction: column; gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all .15s; user-select: none; box-sizing: border-box; }
+  .check-item:hover { border-color: var(--border-hi); background: rgba(255,255,255,.03); }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-box { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; border: 1.5px solid var(--border-hi); background: rgba(255,255,255,.04); display: flex; align-items: center; justify-content: center; transition: all .15s; }
+  .check-box svg { display: none; }
+  .check-item input[type="checkbox"]:checked ~ .check-box { background: var(--accent); border-color: var(--accent); }
+  .check-item input[type="checkbox"]:checked ~ .check-box svg { display: block; }
+  .check-label { font-size: 14px; color: var(--text); transition: color .15s; }
+  .check-item input[type="checkbox"]:checked ~ .check-label { color: var(--accent); font-weight: 500; }
+
+  .acao-wrap { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; transition: border-color .2s; }
+  .acao-wrap.active { border-color: var(--border-hi); }
+  .acao-header { display: flex; align-items: center; gap: 12px; padding: 13px 16px; cursor: pointer; background: rgba(255,255,255,.02); transition: background .15s; user-select: none; }
+  .acao-header:hover { background: rgba(255,255,255,.04); }
+  .acao-checkbox { display: none; }
+  .acao-check-box { width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; border: 1.5px solid var(--border-hi); background: rgba(255,255,255,.04); display: flex; align-items: center; justify-content: center; transition: all .15s; }
+  .acao-check-box svg { display: none; }
+  .acao-checkbox:checked ~ .acao-check-box { background: var(--accent); border-color: var(--accent); }
+  .acao-checkbox:checked ~ .acao-check-box svg { display: block; }
+  .acao-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .acao-name { font-size: 14px; font-weight: 500; }
+  .acao-hint { margin-left: auto; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .acao-fields { display: none; padding: 14px 16px; border-top: 1px solid var(--border); gap: 12px; }
+  .acao-fields.open { display: grid; grid-template-columns: 1fr 200px 160px; }
+  @media(max-width:600px){ .acao-fields.open { grid-template-columns: 1fr; } }
+
+  .farol-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media(max-width:520px){ .farol-grid { grid-template-columns: 1fr; } }
+  .farol-option { display: none; }
+  .farol-label { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all .2s; text-align: center; background: rgba(255,255,255,.02); }
+  .farol-label:hover { border-color: var(--border-hi); background: rgba(255,255,255,.04); }
+  .farol-circle { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+  .farol-option[value="verde"]:checked    + .farol-label { border-color: var(--green); background: rgba(34,197,94,.08); }
+  .farol-option[value="amarelo"]:checked  + .farol-label { border-color: var(--amber); background: rgba(245,158,11,.08); }
+  .farol-option[value="vermelho"]:checked + .farol-label { border-color: var(--red);   background: rgba(239,68,68,.08); }
+  .farol-option[value="verde"]:checked    + .farol-label .farol-circle { box-shadow: 0 0 14px rgba(34,197,94,.6); }
+  .farol-option[value="amarelo"]:checked  + .farol-label .farol-circle { box-shadow: 0 0 14px rgba(245,158,11,.6); }
+  .farol-option[value="vermelho"]:checked + .farol-label .farol-circle { box-shadow: 0 0 14px rgba(239,68,68,.6); }
+  .farol-name { font-size: 13px; font-weight: 600; }
+  .farol-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  .progress-bar-wrap { background: var(--border); border-radius: 99px; height: 4px; overflow: hidden; margin: 24px 0 8px; }
+  .progress-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s ease; }
+  .progress-label { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 24px; text-align: right; }
+  .submit-wrap { display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; }
+  .btn-reset { padding: 11px 20px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--muted); font-family: var(--sans); font-size: 14px; cursor: pointer; transition: all .2s; }
+  .btn-reset:hover { border-color: var(--border-hi); color: var(--text); }
+  .btn-submit { padding: 11px 28px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; }
+  .btn-submit:hover { background: #3a7de8; }
+  .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+  .toast { position: fixed; bottom: 28px; right: 28px; border-radius: 10px; padding: 14px 20px; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(12px); transition: all .3s; pointer-events: none; z-index: 999; max-width: 320px; border: 1px solid; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="header-tag">Daily Comercial</div>
+    <h1>Framework do Supervisor</h1>
+    <div class="header-sub">Duracao: 10-15 min &nbsp;·&nbsp; Foco: Acao, Rastreamento e Viabilidade</div>
+  </div>
+
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+  <div class="progress-label"><span id="progressPct">0%</span> preenchido</div>
+
+  <form id="dailyForm" novalidate>
+    <div class="meta-row">
+      <div class="field"><label>Data</label><input type="date" id="data" name="data" required></div>
+      <div class="field"><label>Supervisor</label><input type="text" name="supervisor" placeholder="Nome completo" required></div>
+      <div class="field"><label>E-mail do supervisor</label><input type="email" name="emailSupervisor" placeholder="supervisor@empresa.com" required></div>
+    </div>
+    
+    <div class="meta-row-2">
+      <div class="field">
+        <label>Equipe</label>
+        <input type="text" name="equipe" placeholder="Nome da equipe / celula" required>
+      </div>
+      <div class="field">
+        <label>E-mail Alternativo (Opcional)</label>
+        <label class="check-item" style="margin: 0; height: 42px;">
+          <input type="checkbox" id="chkOutroGerente">
+          <div class="check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div>
+          <span class="check-label" style="font-size: 13px;">Enviar para outro gerente?</span>
+        </label>
+        <input type="email" id="inputEmailGerente" name="emailGerente" placeholder="Digite o novo e-mail" style="display: none; margin-top: 8px;">
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title">Indicadores do Dia</span>
+        <span class="section-badge">Quantitativo</span>
+      </div>
+      <div class="section-body">
+        <div class="subgroup">
+          <div class="subgroup-title">1.1 Meta Recalculada</div>
+          <div class="grid-2">
+            <div class="field mono"><label>Valor (R$)</label><input type="text" name="metaRecalcR" placeholder="ex: 120.000,00"></div>
+            <div class="field mono"><label>Volume</label><input type="text" name="metaRecalcVol" placeholder="ex: 45"></div>
+          </div>
+        </div>
+        <div class="subgroup" style="margin-top:12px">
+          <div class="subgroup-title">1.2 Eficiencia por Esteira (%)</div>
+          <div class="grid-3">
+            <div class="field"><label>Movida 100%</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaMovida" placeholder="0" min="0" max="100"></div></div>
+            <div class="field"><label>Condicional</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaCondicional" placeholder="0" min="0" max="100"></div></div>
+            <div class="field"><label>Localiza</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaLocaliza" placeholder="0" min="0" max="100"></div></div>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:12px; gap:12px;">
+          <div class="subgroup">
+            <div class="subgroup-title">1.3 Deficit do Mes</div>
+            <div class="grid-2">
+              <div class="field mono"><label>Valor (R$)</label><input type="text" name="deficitR" placeholder="ex: 15.000,00"></div>
+              <div class="field mono"><label>Volume</label><input type="text" name="deficitVol" placeholder="ex: 8"></div>
+            </div>
+          </div>
+          <div class="subgroup">
+            <div class="subgroup-title">1.5 Total de Indicacoes</div>
+            <div class="field mono"><label>Total</label><input type="number" name="totalIndicacoes" placeholder="0" min="0"></div>
+          </div>
+        </div>
+        <div class="subgroup" style="margin-top:12px">
+          <div class="subgroup-title">1.4 Meta Relogio (Acumulado)</div>
+          <div class="grid-2">
+            <div class="field mono"><label>Orcado</label><input type="text" name="metaRelogioOrcado" placeholder="ex: 80.000,00"></div>
+            <div class="field mono"><label>Realizado</label><input type="text" name="metaRelogioRealizado" placeholder="ex: 72.500,00"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">Diagnostico</span>
+        <span class="section-badge">O que esta travando?</span>
+      </div>
+      <div class="section-body">
+        <div class="subgroup">
+          <div class="subgroup-title">Qualitativo — como e feito</div>
+          <div class="check-group">
+            <label class="check-item"><input type="checkbox" name="diagQualOrganizacional" value="Sim"><div class="check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiencia - Organizacional</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQualAderencia" value="Sim"><div class="check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiencia - Aderencia</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQualTicket" value="Sim"><div class="check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Ticket Medio</span></label>
+          </div>
+        </div>
+        <div class="subgroup" style="margin-top:12px">
+          <div class="subgroup-title">Quantitativo — quanto e feito</div>
+          <div class="check-group">
+            <label class="check-item"><input type="checkbox" name="diagQuantEsforco" value="Sim"><div class="check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiencia - Esforco (Contatos)</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQuantMassa" value="Sim"><div class="check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Massa Critica - Negocios (Leads)</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <span class="section-title">Plano de Acao &amp; Rastreamento</span>
+        <span class="section-badge">Marque para preencher</span>
+      </div>
+      <div class="section-body" id="acoesContainer"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <span class="section-title">Farol de Confianca</span>
+        <span class="section-badge">Viabilidade de atingir a meta</span>
+      </div>
+      <div class="section-body">
+        <div class="farol-grid">
+          <div><input class="farol-option" type="radio" name="farol" id="farolVermelho" value="vermelho"><label class="farol-label" for="farolVermelho"><div class="farol-circle" style="background:var(--red)"></div><div class="farol-name" style="color:var(--red)">Vermelho</div><div class="farol-desc">Impossivel - mesmo com o plano de acao, a meta nao e atingivel.</div></label></div>
+          <div><input class="farol-option" type="radio" name="farol" id="farolAmarelo" value="amarelo"><label class="farol-label" for="farolAmarelo"><div class="farol-circle" style="background:var(--amber)"></div><div class="farol-name" style="color:var(--amber)">Amarelo</div><div class="farol-desc">Possivel com esforco - ha um caminho, mas incerteza real.</div></label></div>
+          <div><input class="farol-option" type="radio" name="farol" id="farolVerde" value="verde"><label class="farol-label" for="farolVerde"><div class="farol-circle" style="background:var(--green)"></div><div class="farol-name" style="color:var(--green)">Verde</div><div class="farol-desc">Provavel - acredito que atingirei ou superarei a meta.</div></label></div>
+        </div>
+        <div class="field" style="margin-top:16px"><label>Observacao sobre o farol (opcional)</label><textarea name="farolObs" placeholder="Contexto, riscos ou pontos de atencao..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="submit-wrap">
+      <button type="button" class="btn-reset" onclick="resetForm()">Limpar formulario</button>
+      <button type="submit" class="btn-submit" id="btnSubmit">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar Daily
+      </button>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ACOES = [
+  { key:'treinamento',  label:'Treinamento',  color:'#818cf8' },
+  { key:'monitoria',    label:'Monitoria',    color:'#34d399' },
+  { key:'substituicao', label:'Substituicao', color:'#fb923c' },
+  { key:'feedback',     label:'Feedback',     color:'#f472b6' },
+  { key:'remalho',      label:'Remalho',      color:'#a78bfa' },
+  { key:'indicacoes',   label:'Indicacoes',   color:'#38bdf8' },
+];
+
+const container = document.getElementById('acoesContainer');
+ACOES.forEach(a => {
+  const wrap = document.createElement('div');
+  wrap.className = 'acao-wrap';
+  wrap.id = 'wrap_' + a.key;
+  wrap.innerHTML = `
+    <label class="acao-header" for="chk_${a.key}">
+      <input class="acao-checkbox" type="checkbox" id="chk_${a.key}" name="${a.key}_ativo" value="Sim">
+      <div class="acao-check-box"><svg width="11" height="9" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div>
+      <div class="acao-dot" style="background:${a.color}"></div>
+      <span class="acao-name">${a.label}</span>
+      <span class="acao-hint" id="hint_${a.key}">Marque para preencher</span>
+    </label>
+    <div class="acao-fields" id="fields_${a.key}">
+      <div class="field"><label>Detalhe</label><textarea name="${a.key}_detalhe" placeholder="O que sera feito..." rows="3"></textarea></div>
+      <div class="field"><label>Resultado esperado</label><input type="text" name="${a.key}_resultado" placeholder="Ex: +15% conversao"></div>
+      <div class="field"><label>Prazo</label><input type="date" name="${a.key}_prazo"></div>
+    </div>
+  `;
+  container.appendChild(wrap);
+
+  const chk = document.getElementById('chk_' + a.key);
+  const fields = document.getElementById('fields_' + a.key);
+  const hint = document.getElementById('hint_' + a.key);
+
+  chk.addEventListener('change', () => {
+    fields.classList.toggle('open', chk.checked);
+    wrap.classList.toggle('active', chk.checked);
+    hint.textContent = chk.checked ? 'Preenchendo...' : 'Marque para preencher';
+    calcProgress();
+  });
+});
+
+function calcProgress() {
+  const inputs = [...document.querySelectorAll('#dailyForm input:not([type=checkbox]):not([type=radio]), #dailyForm textarea')]
+    .filter(el => {
+      const wrap = el.closest('.acao-wrap');
+      if (wrap) {
+        const chk = wrap.querySelector('.acao-checkbox');
+        return chk && chk.checked;
+      }
+      return true;
+    });
+  const filled = inputs.filter(el => el.value.trim() !== '').length;
+  const pct = inputs.length ? Math.round((filled / inputs.length) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+document.getElementById('dailyForm').addEventListener('input', calcProgress);
+document.getElementById('dailyForm').addEventListener('change', calcProgress);
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('data').value = today;
+calcProgress();
+
+document.getElementById('chkOutroGerente').addEventListener('change', function(e) {
+  const inputEmail = document.getElementById('inputEmailGerente');
+  if (e.target.checked) {
+    inputEmail.style.display = 'block';
+    inputEmail.required = true;
+  } else {
+    inputEmail.style.display = 'none';
+    inputEmail.required = false;
+    inputEmail.value = '';
+  }
+});
+
+function coletarFormulario() {
+  const fd = new FormData(document.getElementById('dailyForm'));
+  const d = Object.fromEntries(fd.entries());
+
+  ['diagQualOrganizacional','diagQualAderencia','diagQualTicket','diagQuantEsforco','diagQuantMassa'].forEach(k => {
+    if (!d[k]) d[k] = 'Nao';
+  });
+
+  ACOES.forEach(a => {
+    if (!d[a.key + '_ativo']) {
+      d[a.key + '_ativo'] = 'Nao';
+      d[a.key + '_detalhe'] = '';
+      d[a.key + '_resultado'] = '';
+      d[a.key + '_prazo'] = '';
+    }
+  });
+
+  return d;
+}
+
+function buildEmailHTML(d) {
+  const farolColor = { verde:'#22c55e', amarelo:'#f59e0b', vermelho:'#ef4444' };
+  const farolLabel = { verde:'Verde - Provavel', amarelo:'Amarelo - Possivel com Esforco', vermelho:'Vermelho - Impossivel' };
+  const fc = farolColor[d.farol] || '#6b7280';
+  const fl = farolLabel[d.farol] || 'Nao informado';
+
+  const diagItems = [
+    ['Efic. Organizacional',  d.diagQualOrganizacional],
+    ['Efic. Aderencia',       d.diagQualAderencia],
+    ['Ticket Medio',          d.diagQualTicket],
+    ['Esforco (Contatos)',    d.diagQuantEsforco],
+    ['Massa Critica (Leads)', d.diagQuantMassa],
+  ].map(([label, val]) => {
+    const isSim = val === 'Sim';
+    return `<tr>
+      <td width="20" style="padding:8px 0; border-bottom:1px solid #2a2c30;">
+        <div style="width:12px;height:12px;border-radius:3px;background:${isSim?'#22c55e':'#374151'};"></div>
+      </td>
+      <td style="padding:8px 0; border-bottom:1px solid #2a2c30; font-size:14px; color:${isSim?'#e8e9ea':'#6b7280'}">${label}</td>
+      <td align="right" style="padding:8px 0; border-bottom:1px solid #2a2c30; font-size:12px; font-weight:700; color:${isSim?'#22c55e':'#6b7280'}">${val}</td>
+    </tr>`;
+  }).join('');
+
+  const acoesAtivas = ACOES.filter(a => d[a.key+'_ativo'] === 'Sim');
+  const acoesRows = acoesAtivas.map(a => `
+    <tr>
+      <td style="padding:10px 12px; border-bottom:1px solid #2a2c30; font-weight:600; color:#e8e9ea">${a.label}</td>
+      <td style="padding:10px 12px; border-bottom:1px solid #2a2c30; color:#c9cdd2">${d[a.key+'_detalhe']||'--'}</td>
+      <td style="padding:10px 12px; border-bottom:1px solid #2a2c30; color:#c9cdd2">${d[a.key+'_resultado']||'--'}</td>
+      <td style="padding:10px 12px; border-bottom:1px solid #2a2c30; color:#c9cdd2; white-space:nowrap">${d[a.key+'_prazo']||'--'}</td>
+    </tr>`).join('');
+
+  const card = (num, title, body) => `
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#161719; border:1px solid #2a2c30; border-radius:12px; margin-bottom:20px;">
+      <tr>
+        <td style="padding:14px 20px; background:#1e1f22; border-bottom:1px solid #2a2c30; border-radius:12px 12px 0 0;">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td width="30"><span style="font-size:11px;font-family:monospace;background:#1e3a6e;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:4px;padding:2px 8px">${num}</span></td>
+            <td><span style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#e8e9ea">${title}</span></td>
+          </tr></table>
+        </td>
+      </tr>
+      <tr><td style="padding:20px;">${body}</td></tr>
+    </table>`;
+
+  const kvTable = pairs => {
+    let rows = '';
+    for(let i=0; i<pairs.length; i+=2) {
+      const [l1, v1] = pairs[i];
+      const [l2, v2] = pairs[i+1] || ['',''];
+      rows += `<tr>
+        <td width="48%" style="padding:12px; background:#1e1f22; border:1px solid #2a2c30; border-radius:8px;">
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">${l1}</div>
+          <div style="font-size:15px;font-weight:600;color:#e8e9ea;">${v1||'--'}</div>
+        </td>
+        <td width="4%"></td>
+        ${l2 ? `<td width="48%" style="padding:12px; background:#1e1f22; border:1px solid #2a2c30; border-radius:8px;">
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">${l2}</div>
+          <div style="font-size:15px;font-weight:600;color:#e8e9ea;">${v2||'--'}</div>
+        </td>` : `<td></td>`}
+      </tr>
+      <tr><td height="12"></td></tr>`;
+    }
+    return `<table width="100%" cellpadding="0" cellspacing="0" border="0">${rows}</table>`;
+  };
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="font-family:'Segoe UI',sans-serif;background:#0e0f11;color:#e8e9ea;margin:0;padding:0">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0e0f11;"><tr><td align="center" style="padding:30px 15px;">
+  <table width="100%" style="max-width:680px;" cellpadding="0" cellspacing="0" border="0">
+    <tr><td style="padding-bottom:20px; border-bottom:1px solid #2a2c30; text-align:left;">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#4f8ef7;margin-bottom:6px">Daily Comercial</div>
+      <div style="font-size:22px;font-weight:700;color:#e8e9ea">Framework do Supervisor</div>
+      <div style="font-size:13px;color:#6b7280;margin-top:4px">${d.supervisor} &nbsp;·&nbsp; ${d.equipe} &nbsp;·&nbsp; ${d.data}</div>
+    </td></tr>
+    <tr><td height="20"></td></tr>
+    <tr><td>
+      ${card('01','Indicadores do Dia', kvTable([
+        ['Meta Recalc. R$', d.metaRecalcR], ['Meta Recalc. Vol', d.metaRecalcVol],
+        ['Efic. Movida 100%', (d.eficienciaMovida||'--')+'%'], ['Efic. Condicional', (d.eficienciaCondicional||'--')+'%'],
+        ['Efic. Localiza', (d.eficienciaLocaliza||'--')+'%'], ['Deficit R$', d.deficitR],
+        ['Deficit Vol', d.deficitVol], ['Total Indicacoes', d.totalIndicacoes],
+        ['Relogio Orcado', d.metaRelogioOrcado], ['Relogio Realizado', d.metaRelogioRealizado],
+      ]))}
+      ${card('02','Diagnostico', `<table width="100%" cellpadding="0" cellspacing="0">${diagItems}</table>`)}
+      ${acoesRows ? card('03','Plano de Acao', `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2a2c30">Acao</th>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2a2c30">Detalhe</th>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2a2c30">Resultado</th>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #2a2c30">Prazo</th>
+        </tr></thead><tbody>${acoesRows}</tbody>
+      </table>`) : ''}
+      ${card('04','Farol de Confianca', `<div style="text-align:center">
+        <div style="display:inline-block;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:700;border:2px solid ${fc};color:${fc};background:${fc}22">${fl}</div>
+        ${d.farolObs ? `<div style="margin-top:16px;font-size:13px;color:#9ca3af;font-style:italic">"${d.farolObs}"</div>` : ''}
+      </div>`)}
+    </td></tr>
+    <tr><td align="center" style="font-size:11px;color:#3d4045;padding:20px 0;">
+      Framework Supervisor v8.0 &nbsp;·&nbsp; ${new Date().toLocaleString('pt-BR')}
+    </td></tr>
+  </table>
+</td></tr></table></body></html>`;
+}
+
+document.getElementById('dailyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Enviando...`;
+
+  const d = coletarFormulario();
+  const emailHTML = buildEmailHTML(d);
+
+  const sheetRow = [
+    d.data, d.supervisor, d.equipe,
+    d.metaRecalcR, d.metaRecalcVol,
+    d.eficienciaMovida, d.eficienciaCondicional, d.eficienciaLocaliza,
+    d.deficitR, d.deficitVol,
+    d.totalIndicacoes,
+    d.metaRelogioOrcado, d.metaRelogioRealizado,
+    d.diagQualOrganizacional, d.diagQualAderencia, d.diagQualTicket,
+    d.diagQuantEsforco, d.diagQuantMassa,
+    ...ACOES.flatMap(a => [d[a.key+'_detalhe'], d[a.key+'_resultado'], d[a.key+'_prazo']]),
+    d.farol, d.farolObs,
+  ];
+
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbykP1zdLwOdT2gZlMDABKHB29JkojGzRtiy0ptkGM_Zurp3myj448fvstH7v179klEz/exec';
+
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        sheetRow,
+        emailHTML,
+        emailSupervisor: d.emailSupervisor,
+        emailGerente:    d.emailGerente,
+        supervisor:      d.supervisor,
+        data:            d.data,
+      })
+    });
+    await new Promise(r => setTimeout(r, 1500));
+    showToast('Daily e PDF enviados com sucesso!', false);
+  } catch(err) {
+    console.error(err);
+    showToast('Erro ao enviar. Tente novamente.', true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar Daily`;
+  }
+});
+
+function showToast(msg, isWarn) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background  = isWarn ? 'rgba(245,158,11,.15)' : '#14532d';
+  t.style.borderColor = isWarn ? '#f59e0b' : '#22c55e';
+  t.style.color       = isWarn ? '#f59e0b' : '#22c55e';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function resetForm() {
+  if (confirm('Limpar todos os campos?')) {
+    document.getElementById('dailyForm').reset();
+    document.getElementById('data').value = today;
+    
+    const inputEmail = document.getElementById('inputEmailGerente');
+    inputEmail.style.display = 'none';
+    inputEmail.required = false;
+
+    ACOES.forEach(a => {
+      document.getElementById('fields_' + a.key).classList.remove('open');
+      document.getElementById('wrap_' + a.key).classList.remove('active');
+      document.getElementById('hint_' + a.key).textContent = 'Marque para preencher';
+    });
+    calcProgress();
+  }
+}
+
+const s = document.createElement('style');
+s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin .8s linear infinite}';
+document.head.appendChild(s);
+</script>
+</body>
+</html>
