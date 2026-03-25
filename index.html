@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Comercial — FINX Supervisor</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --finx-yellow:     #FCD02B;
@@ -45,17 +47,18 @@
   }
 
   body::before, body::after {
-    content: ''; position: fixed; border-radius: 50%; filter: blur(120px); z-index: 0; pointer-events: none; opacity: 0.6;
+    content: ''; position: fixed; border-radius: 50%; filter: blur(80px); z-index: 0; pointer-events: none; opacity: 0.5;
+    will-change: transform;
   }
-  body::before { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(0, 101, 255, 0.3); }
-  body::after { bottom: -10%; right: -10%; width: 600px; height: 600px; background: rgba(27, 130, 176, 0.2); }
+  body::before { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(0, 101, 255, 0.25); }
+  body::after { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(27, 130, 176, 0.18); }
 
   .shell { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 50px 20px 80px; }
 
-  @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-  .animate-in { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-  .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } 
-  .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-in { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .delay-1 { animation-delay: 0.08s; } .delay-2 { animation-delay: 0.16s; } 
+  .delay-3 { animation-delay: 0.24s; } .delay-4 { animation-delay: 0.32s; }
 
   .header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--border); }
   .header-logo { height: 45px; margin-bottom: 24px; object-fit: contain; }
@@ -70,11 +73,12 @@
   @media(max-width:650px){ .meta-row, .meta-row-2, .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
   .section { 
-    background: var(--surface); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    background: var(--surface); 
     border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; 
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease; box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+    contain: layout style;
   }
-  .section:focus-within, .section:hover { border-color: var(--border-hi); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }
+  .section:focus-within, .section:hover { border-color: var(--border-hi); box-shadow: 0 6px 28px rgba(0, 0, 0, 0.2); }
   .section-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
   .section-num { font-size: 11px; font-weight: 700; color: var(--finx-dark); background: var(--accent-yellow); border-radius: 6px; padding: 3px 8px; flex-shrink: 0; }
   .section-title { font-size: 14px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: #fff; }
@@ -142,7 +146,7 @@
     color: var(--finx-yellow);
   }
 
-  .subgroup { background: rgba(0,0,0,.15); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 6px; }
+  .subgroup { background: rgba(0,0,0,.15); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 6px; contain: layout style; }
   .subgroup-title { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
   .subgroup-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
@@ -208,12 +212,15 @@
   
   .toast { position: fixed; bottom: 32px; right: 32px; border-radius: 12px; padding: 16px 24px; font-size: 14px; font-weight: 600; opacity: 0; transform: translateY(16px); transition: all .4s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; z-index: 999; max-width: 340px; border: 1px solid; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   .toast.show { opacity: 1; transform: translateY(0); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 1.2s linear infinite; }
 </style>
 </head>
 <body>
 <div class="shell">
   <div class="header animate-in">
-    <img src="https://github.com/user-attachments/assets/41e98109-418f-40d4-9c27-75a357726e0b" alt="FINX" class="header-logo">
+    <img src="https://github.com/user-attachments/assets/41e98109-418f-40d4-9c27-75a357726e0b" alt="FINX" class="header-logo" loading="eager" decoding="async">
     <div class="header-tag">Daily Comercial</div>
     <h1>Framework do Supervisor</h1>
     <div class="header-sub">Duração: 10-15 min &nbsp;·&nbsp; Foco: Ação, Rastreamento e Viabilidade</div>
@@ -283,17 +290,17 @@
         <div class="subgroup">
           <div class="subgroup-title">1.1 Meta Recalculada</div>
           <div class="grid-2">
-            <div class="field mono"><label>Valor (R$)</label><input type="text" name="metaRecalcR" class="track-single" placeholder="ex: 120.000,00"></div>
-            <div class="field mono"><label>Volume</label><input type="text" name="metaRecalcVol" class="track-single" placeholder="ex: 45"></div>
+            <div class="field mono"><label>Valor (R$)</label><input type="text" name="metaRecalcR" id="metaRecalcR" class="track-single" placeholder="ex: 120.000,00"></div>
+            <div class="field mono"><label>Volume</label><input type="text" name="metaRecalcVol" id="metaRecalcVol" class="track-single" placeholder="ex: 45"></div>
           </div>
         </div>
         
         <div class="subgroup" style="margin-top:16px">
           <div class="subgroup-title">1.2 Eficiência por Esteira (%) - Preencha a de foco</div>
           <div class="grid-3">
-            <div class="field"><label>Movida</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaMovida" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
-            <div class="field"><label>Condicional</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaCondicional" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
-            <div class="field"><label>Localiza</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaLocaliza" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
+            <div class="field"><label>Movida</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaMovida" id="eficienciaMovida" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
+            <div class="field"><label>Condicional</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaCondicional" id="eficienciaCondicional" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
+            <div class="field"><label>Localiza</label><div class="input-suffix" data-suffix="%"><input type="number" name="eficienciaLocaliza" id="eficienciaLocaliza" class="track-esteira" placeholder="0" min="0" max="100"></div></div>
           </div>
         </div>
 
@@ -301,22 +308,22 @@
           <div class="subgroup" style="margin-top:0;">
             <div class="subgroup-title">1.3 Déficit do Mês</div>
             <div class="grid-2">
-              <div class="field mono"><label>Valor (R$)</label><input type="text" name="deficitR" class="track-single" placeholder="ex: 15.000,00"></div>
-              <div class="field mono"><label>Volume</label><input type="text" name="deficitVol" class="track-single" placeholder="ex: 8"></div>
+              <div class="field mono"><label>Valor (R$)</label><input type="text" name="deficitR" id="deficitR" class="track-single" placeholder="ex: 15.000,00"></div>
+              <div class="field mono"><label>Volume</label><input type="text" name="deficitVol" id="deficitVol" class="track-single" placeholder="ex: 8"></div>
             </div>
           </div>
           <div class="subgroup" style="margin-top:0;">
             <div class="subgroup-title">1.4 Meta Relógio (Acumulado)</div>
             <div class="grid-2">
-              <div class="field mono"><label>Orçado</label><input type="text" name="metaRelogioOrcado" class="track-single" placeholder="ex: 80.000,00"></div>
-              <div class="field mono"><label>Realizado</label><input type="text" name="metaRelogioRealizado" class="track-single" placeholder="ex: 72.500,00"></div>
+              <div class="field mono"><label>Orçado</label><input type="text" name="metaRelogioOrcado" id="metaRelogioOrcado" class="track-single" placeholder="ex: 80.000,00"></div>
+              <div class="field mono"><label>Realizado</label><input type="text" name="metaRelogioRealizado" id="metaRelogioRealizado" class="track-single" placeholder="ex: 72.500,00"></div>
             </div>
           </div>
         </div>
         
         <div class="subgroup" style="margin-top:16px">
           <div class="subgroup-title">1.5 Total de Indicações</div>
-          <div class="field mono"><label>Total</label><input type="number" name="totalIndicacoes" class="track-single" placeholder="0" min="0"></div>
+          <div class="field mono"><label>Total</label><input type="number" name="totalIndicacoes" id="totalIndicacoes" class="track-single" placeholder="0" min="0"></div>
         </div>
       </div>
     </div>
@@ -331,16 +338,16 @@
         <div class="subgroup">
           <div class="subgroup-title">Qualitativo — como é feito</div>
           <div class="check-group">
-            <label class="check-item"><input type="checkbox" name="diagQualOrganizacional" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiência - Organizacional</span></label>
-            <label class="check-item"><input type="checkbox" name="diagQualAderencia" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiência - Aderência</span></label>
-            <label class="check-item"><input type="checkbox" name="diagQualTicket" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Ticket Médio</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQualOrganizacional" id="diagQualOrganizacional" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiência - Organizacional</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQualAderencia" id="diagQualAderencia" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiência - Aderência</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQualTicket" id="diagQualTicket" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Ticket Médio</span></label>
           </div>
         </div>
         <div class="subgroup" style="margin-top:16px">
           <div class="subgroup-title">Quantitativo — quanto é feito</div>
           <div class="check-group">
-            <label class="check-item"><input type="checkbox" name="diagQuantEsforco" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiência - Esforço (Contatos)</span></label>
-            <label class="check-item"><input type="checkbox" name="diagQuantMassa" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Massa Crítica - Negócios (Leads)</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQuantEsforco" id="diagQuantEsforco" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Eficiência - Esforço (Contatos)</span></label>
+            <label class="check-item"><input type="checkbox" name="diagQuantMassa" id="diagQuantMassa" value="Sim"><div class="check-box"><svg width="12" height="9" fill="none" stroke="#fff" viewBox="0 0 11 9"><polyline points="1 4.5 4 7.5 10 1"/></svg></div><span class="check-label">Massa Crítica - Negócios (Leads)</span></label>
           </div>
         </div>
       </div>
@@ -367,7 +374,7 @@
           <div><input class="farol-option" type="radio" name="farol" id="farolAmarelo" value="amarelo"><label class="farol-label" for="farolAmarelo"><div class="farol-circle" style="background:var(--amber)"></div><div class="farol-name" style="color:var(--amber)">Amarelo</div><div class="farol-desc">Possível - há caminho, mas incerto.</div></label></div>
           <div><input class="farol-option" type="radio" name="farol" id="farolVerde" value="verde"><label class="farol-label" for="farolVerde"><div class="farol-circle" style="background:var(--green)"></div><div class="farol-name" style="color:var(--green)">Verde</div><div class="farol-desc">Provável - superaremos a meta.</div></label></div>
         </div>
-        <div class="field" style="margin-top:20px"><label>Observação sobre o farol (opcional)</label><textarea name="farolObs" placeholder="Contexto, riscos ou pontos de atenção..."></textarea></div>
+        <div class="field" style="margin-top:20px"><label>Observação sobre o farol (opcional)</label><textarea name="farolObs" id="farolObs" placeholder="Contexto, riscos ou pontos de atenção..."></textarea></div>
       </div>
     </div>
 
@@ -399,11 +406,13 @@ function setupCustomSelect(containerId, inputId, onSelectCallback) {
   const options = items.querySelectorAll('div');
   options.forEach(opt => {
     opt.addEventListener('click', function(e) {
+      e.stopPropagation();
       selected.innerHTML = this.innerHTML;
       hiddenInput.value = this.dataset.value;
-      hiddenInput.dispatchEvent(new Event('input'));
       if (onSelectCallback) onSelectCallback(this);
-      selected.click();
+      items.classList.remove('select-show');
+      selected.classList.remove('select-arrow-active');
+      hiddenInput.dispatchEvent(new Event('change'));
     });
   });
 }
@@ -444,7 +453,7 @@ function setupMultiSelect(containerId, inputId) {
         hiddenInput.value = vals.join(', ');
       }
 
-      hiddenInput.dispatchEvent(new Event('input'));
+      hiddenInput.dispatchEvent(new Event('change'));
     });
   });
 }
@@ -463,20 +472,17 @@ document.addEventListener("click", function(e) {
 setupCustomSelect('selectSupervisor', 'inputSupervisor', (selectedOpt) => {
   const emailField = document.getElementById('inputEmailSupervisor');
   emailField.value = selectedOpt.dataset.email;
-  emailField.dispatchEvent(new Event('input'));
+  emailField.dispatchEvent(new Event('change'));
 });
 
 setupMultiSelect('selectEquipe', 'inputEquipe');
 
 
-document.addEventListener('input', function (event) {
-  if (event.target.tagName.toLowerCase() !== 'textarea') return;
-  autoResize(event.target);
-}, false);
-
 function autoResize(textarea) {
-  textarea.style.height = 'auto';
-  textarea.style.height = textarea.scrollHeight + 'px';
+  requestAnimationFrame(() => {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  });
 }
 
 
@@ -503,9 +509,9 @@ ACOES.forEach(a => {
       <span class="acao-hint" id="hint_${a.key}">Marque para preencher</span>
     </label>
     <div class="acao-fields" id="fields_${a.key}">
-      <div class="field"><label>Detalhe</label><textarea name="${a.key}_detalhe" placeholder="O que será feito..." rows="1"></textarea></div>
-      <div class="field"><label>Resultado esperado</label><input type="text" name="${a.key}_resultado" placeholder="Ex: +15% conversão"></div>
-      <div class="field"><label>Prazo</label><input type="date" name="${a.key}_prazo"></div>
+      <div class="field"><label>Detalhe</label><textarea id="${a.key}_detalhe" name="${a.key}_detalhe" placeholder="O que será feito..." rows="1"></textarea></div>
+      <div class="field"><label>Resultado esperado</label><input type="text" id="${a.key}_resultado" name="${a.key}_resultado" placeholder="Ex: +15% conversão"></div>
+      <div class="field"><label>Prazo</label><input type="date" id="${a.key}_prazo" name="${a.key}_prazo"></div>
     </div>
   `;
   container.appendChild(wrap);
@@ -521,7 +527,6 @@ ACOES.forEach(a => {
     calcProgress();
   });
 });
-
 
 function calcProgress() {
   const singles = document.querySelectorAll('.track-single');
@@ -548,12 +553,8 @@ function calcProgress() {
   document.getElementById('progressPct').textContent = pct + '%';
 }
 
-document.getElementById('dailyForm').addEventListener('input', calcProgress);
-document.getElementById('dailyForm').addEventListener('change', calcProgress);
-
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('data').value = today;
-calcProgress();
 
 document.getElementById('chkOutroGerente').addEventListener('change', function(e) {
   const inputEmail = document.getElementById('inputEmailGerente');
@@ -568,6 +569,113 @@ document.getElementById('chkOutroGerente').addEventListener('change', function(e
   }
 });
 
+const DRAFT_KEY = 'finx_daily_draft';
+
+function saveDraft() {
+  const d = {};
+  const inputs = document.getElementById('dailyForm').querySelectorAll('input, textarea');
+  
+  inputs.forEach(el => {
+    const key = el.id || el.name;
+    if (!key) return; 
+
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      d[key] = el.checked;
+    } else {
+      d[key] = el.value;
+    }
+  });
+  
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+}
+
+let _isLoadingDraft = false;
+
+function loadDraft() {
+  const saved = localStorage.getItem(DRAFT_KEY);
+  if (!saved) {
+    calcProgress();
+    return;
+  }
+  
+  try {
+    const d = JSON.parse(saved);
+    _isLoadingDraft = true;
+    
+    Object.keys(d).forEach(key => {
+      const el = document.getElementById(key) || document.getElementsByName(key)[0];
+      if (!el) return;
+
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        el.checked = d[key];
+        el.dispatchEvent(new Event('change'));
+      } else {
+        el.value = d[key];
+        if (el.tagName.toLowerCase() === 'textarea') autoResize(el);
+      }
+    });
+
+    const supVal = document.getElementById('inputSupervisor').value;
+    if (supVal) {
+      const opt = document.querySelector(`#selectSupervisor .select-items div[data-value="${supVal}"]`);
+      if (opt) document.getElementById('displaySupervisor').textContent = opt.textContent;
+    }
+
+    const eqVal = document.getElementById('inputEquipe').value;
+    if (eqVal) {
+      const vals = eqVal.split(', ');
+      const texts = [];
+      vals.forEach(v => {
+        const opt = document.querySelector(`#selectEquipe .select-items div[data-value="${v}"]`);
+        if (opt) {
+          opt.classList.add('multi-selected');
+          texts.push(opt.textContent);
+        }
+      });
+      document.getElementById('displayEquipe').textContent = texts.length ? texts.join(', ') : 'Selecione...';
+    }
+
+    const inputGerente = document.getElementById('inputEmailGerente');
+    if (document.getElementById('chkOutroGerente').checked) {
+      inputGerente.style.display = 'block';
+      inputGerente.required = true;
+    }
+
+  } catch(e) { 
+    console.error('Erro ao ler rascunho', e); 
+  } finally {
+    _isLoadingDraft = false;
+    calcProgress();
+  }
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+let timeoutDigitacao;
+
+document.getElementById('dailyForm').addEventListener('input', function (e) {
+  if (e.target.tagName.toLowerCase() === 'textarea') {
+    autoResize(e.target);
+  }
+  if (_isLoadingDraft) return;
+  clearTimeout(timeoutDigitacao);
+  timeoutDigitacao = setTimeout(() => {
+    saveDraft();
+    calcProgress();
+  }, 400); 
+});
+
+document.getElementById('dailyForm').addEventListener('change', function(e) {
+  if (_isLoadingDraft) return;
+  if (e.target.tagName.toLowerCase() !== 'textarea' && e.target.type !== 'text' && e.target.type !== 'number') {
+    saveDraft();
+    calcProgress();
+  }
+});
+
+loadDraft();
 
 function coletarFormulario() {
   const fd = new FormData(document.getElementById('dailyForm'));
@@ -695,8 +803,20 @@ function buildEmailHTML(d) {
 </td></tr></table></body></html>`;
 }
 
+document.getElementById('dailyForm').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.tagName.toLowerCase() !== 'textarea') {
+    e.preventDefault();
+  }
+});
+
+let isSubmitting = false;
+
 document.getElementById('dailyForm').addEventListener('submit', async function(e) {
   e.preventDefault();
+  
+  if (isSubmitting) return; 
+  isSubmitting = true;      
+  
   const btn = document.getElementById('btnSubmit');
   btn.disabled = true;
   btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Enviando...`;
@@ -717,7 +837,7 @@ document.getElementById('dailyForm').addEventListener('submit', async function(e
     d.farol, d.farolObs,
   ];
 
-  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbykP1zdLwOdT2gZlMDABKHB29JkojGzRtiy0ptkGM_Zurp3myj448fvstH7v179klEz/exec';
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbz3H6VqIezokP-hhWfkMxCIrNCrEqiTSnKAz1MWfGde8-DEthTcFk_QWMl38XSj2Q7h/exec';
 
   try {
     await fetch(BACKEND_URL, {
@@ -734,12 +854,16 @@ document.getElementById('dailyForm').addEventListener('submit', async function(e
       })
     });
     await new Promise(r => setTimeout(r, 1500));
-    showToast('Daily e PDF enviados com sucesso!', false);
+    
+    showToast('Daily enviado com sucesso!', false);
+    clearDraft(); 
+    
   } catch(err) {
     console.error(err);
     showToast('Erro ao enviar. Tente novamente.', true);
   } finally {
     btn.disabled = false;
+    isSubmitting = false; 
     btn.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Enviar Daily`;
   }
 });
@@ -755,12 +879,15 @@ function showToast(msg, isWarn) {
 }
 
 function resetForm() {
-  if (confirm('Limpar todos os campos?')) {
+  if (confirm('Limpar todos os campos? O rascunho também será apagado.')) {
     document.getElementById('dailyForm').reset();
     document.getElementById('data').value = today;
     
     document.getElementById('displaySupervisor').textContent = 'Selecione...';
+    document.getElementById('inputSupervisor').value = '';
+    
     document.getElementById('displayEquipe').textContent = 'Selecione...';
+    document.getElementById('inputEquipe').value = '';
     
     document.querySelectorAll('#selectEquipe .select-items div').forEach(d => d.classList.remove('multi-selected'));
     
@@ -768,20 +895,20 @@ function resetForm() {
     inputEmail.style.display = 'none';
     inputEmail.required = false;
 
-    document.querySelectorAll('textarea').forEach(ta => ta.style.height = 'auto');
+    document.querySelectorAll('textarea').forEach(ta => {
+      ta.style.height = '42px'; 
+    });
 
     ACOES.forEach(a => {
       document.getElementById('fields_' + a.key).classList.remove('open');
       document.getElementById('wrap_' + a.key).classList.remove('active');
       document.getElementById('hint_' + a.key).textContent = 'Marque para preencher';
     });
+    
+    clearDraft(); 
     calcProgress();
   }
 }
-
-const s = document.createElement('style');
-s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin 1.2s linear infinite}';
-document.head.appendChild(s);
 </script>
 </body>
 </html>
