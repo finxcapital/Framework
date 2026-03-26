@@ -468,14 +468,12 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">Enviando Daily...</div>
   <div class="loading-sub" id="loadingSub">Aguarde, isso pode levar alguns segundos</div>
 </div>
 
-<!-- Modal: Senha para teste -->
 <div class="modal-backdrop" id="modalTeste">
   <div class="modal-box">
     <div class="modal-icon">&#x1F9EA;</div>
@@ -493,7 +491,6 @@
   </div>
 </div>
 
-<!-- Modal: Duplicidade -->
 <div class="modal-backdrop" id="modalDuplicado">
   <div class="modal-box">
     <div class="modal-icon">&#x26A0;&#xFE0F;</div>
@@ -507,6 +504,18 @@
 </div>
 
 <script>
+window.addEventListener('beforeunload', function (e) {
+  const formHasData = document.getElementById('data').value || 
+                      document.getElementById('inputSupervisor').value || 
+                      document.getElementById('inputEquipe').value ||
+                      localStorage.getItem('finx_daily_draft');
+                      
+  if (formHasData || isSubmitting) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
 function setupCustomSelect(containerId, inputId, onSelectCallback) {
   const container = document.getElementById(containerId);
   const selected = container.querySelector('.select-selected');
@@ -669,9 +678,6 @@ function calcProgress() {
   document.getElementById('progressBar').style.width = pct + '%';
   document.getElementById('progressPct').textContent = pct + '%';
 }
-
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('data').value = today;
 
 document.getElementById('chkOutroGerente').addEventListener('change', function(e) {
   const inputEmail = document.getElementById('inputEmailGerente');
@@ -1033,6 +1039,8 @@ async function enviarPayload(payload, isTeste) {
     if (!isTeste) clearDraft();
     showToast(isTeste ? '✅ Teste enviado!' : '✅ Daily enviado com sucesso!', false);
 
+    resetForm(true);
+
   } catch(err) {
     console.error(err);
     showToast('❌ Erro ao enviar. Verifique a conexão e tente novamente.', true);
@@ -1046,6 +1054,16 @@ async function enviarPayload(payload, isTeste) {
 document.getElementById('dailyForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   if (isSubmitting) return;
+
+  const valData = document.getElementById('data').value;
+  const valSupervisor = document.getElementById('inputSupervisor').value;
+  const valEquipe = document.getElementById('inputEquipe').value;
+
+  if (!valData || !valSupervisor || !valEquipe) {
+    showToast('⚠️ Preencha os campos de identificação (Data, Supervisor e Equipe) antes de enviar.', true);
+    return;
+  }
+
   isSubmitting = true;
 
   const payload = montarPayload(false);
@@ -1124,13 +1142,14 @@ document.getElementById('modalDuplicado').addEventListener('click', function(e) 
   if (e.target === this) { fecharModal('modalDuplicado'); isSubmitting = false; }
 });
 
-function resetForm() {
-  if (confirm('Limpar todos os campos? O rascunho também será apagado.')) {
+function resetForm(force) {
+  if (force === true || confirm('Limpar todos os campos? O rascunho também será apagado.')) {
     document.getElementById('dailyForm').reset();
-    document.getElementById('data').value = today;
+    document.getElementById('data').value = '';
     
     document.getElementById('displaySupervisor').textContent = 'Selecione...';
     document.getElementById('inputSupervisor').value = '';
+    document.getElementById('inputEmailSupervisor').value = '';
     
     document.getElementById('displayEquipe').textContent = 'Selecione...';
     document.getElementById('inputEquipe').value = '';
