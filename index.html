@@ -933,7 +933,7 @@ document.getElementById('dailyForm').addEventListener('keydown', function(e) {
 });
 
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzzUXcwPeiCSq_bjE2GR2eL-_GtaBF-IWLpHM8k0t_qczaR3CpzNwfEkTZ2g7U5ja0tiw/exec';
-const SENHA_TESTE  = '1234';
+const SENHA_TESTE  = '7530';
 let isSubmitting   = false;
 
 function setLoading(active, titulo, sub) {
@@ -1081,7 +1081,7 @@ document.getElementById('dailyForm').addEventListener('submit', async function(e
     document.getElementById('btnConfirmarDuplicado').onclick = async () => {
       fecharModal('modalDuplicado');
       isSubmitting = true;
-      await enviarPayload(payload, false);
+      await enviarPayload({ ...payload, forcarEnvio: true }, false);
       localStorage.setItem(chaveDup, Date.now());
     };
     abrirModal('modalDuplicado');
