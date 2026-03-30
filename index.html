@@ -207,6 +207,8 @@
   .modal-input-wrap label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
   .modal-input { width: 100%; background: rgba(0,0,0,.3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: #fff; font-family: var(--sans); font-size: 15px; padding: 10px 14px; outline: none; transition: all .2s; letter-spacing: .1em; text-align: center; }
   .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  .modal-input.error { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-dim); animation: shake .35s ease; }
+  .modal-error-msg { font-size: 12px; color: var(--red); margin-top: 6px; text-align: center; min-height: 16px; }
   .modal-actions { display: flex; gap: 10px; }
   .modal-btn { flex: 1; padding: 11px 16px; border-radius: var(--radius-sm); font-family: var(--sans); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; border: none; }
   .modal-btn-cancel { background: rgba(255,255,255,.06); color: var(--muted); border: 1px solid var(--border); }
@@ -216,6 +218,13 @@
   .modal-btn-confirm.yellow { background: var(--finx-yellow); color: var(--finx-dark); }
   .modal-btn-confirm.yellow:hover { background: #e8be10; }
 
+  @keyframes shake {
+    0%,100%{ transform: translateX(0); }
+    20%    { transform: translateX(-6px); }
+    40%    { transform: translateX(6px); }
+    60%    { transform: translateX(-4px); }
+    80%    { transform: translateX(4px); }
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(20, 33, 65, 0.75); backdrop-filter: blur(6px); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
   .loading-overlay.active { opacity: 1; pointer-events: all; }
@@ -387,8 +396,13 @@
     <div class="modal-icon">&#x1F9EA;</div>
     <div class="modal-title">Envio de Teste</div>
     <div class="modal-sub">O e-mail será enviado <strong>somente</strong> para <strong style="color:#fff">lucca.moraes@finxcapital.com.br</strong>.<br>A planilha <u>não</u> será alterada.</div>
+    <div class="modal-input-wrap">
+      <label>Senha de confirmação</label>
+      <input class="modal-input" type="password" id="inputSenhaTeste" placeholder="••••" maxlength="20" autocomplete="off">
+      <div class="modal-error-msg" id="erroSenhaTeste"></div>
+    </div>
     <div class="modal-actions">
-      <button type="button" class="modal-btn modal-btn-cancel" onclick="fecharModal('modalTeste')">Cancelar</button>
+      <button type="button" class="modal-btn modal-btn-cancel" id="btnCancelarTeste">Cancelar</button>
       <button type="button" class="modal-btn modal-btn-confirm yellow" id="btnConfirmarTeste">Enviar Teste</button>
     </div>
   </div>
@@ -400,7 +414,7 @@
     <div class="modal-title" id="modalDuplicadoTitulo">Você já enviou um Daily hoje</div>
     <div class="modal-sub" id="modalDuplicadoSub">Deseja enviar novamente mesmo assim?</div>
     <div class="modal-actions">
-      <button type="button" class="modal-btn modal-btn-cancel" onclick="fecharModal('modalDuplicado'); isSubmitting=false;">Cancelar</button>
+      <button type="button" class="modal-btn modal-btn-cancel" id="btnCancelarDuplicado">Cancelar</button>
       <button type="button" class="modal-btn modal-btn-confirm" id="btnConfirmarDuplicado">Enviar mesmo assim</button>
     </div>
   </div>
@@ -549,14 +563,12 @@ function atualizarListasClosers() {
   DIAG_CONFIG.forEach(bloco => {
     bloco.checks.forEach(check => {
       const divClosers = document.getElementById('closers_' + check.id);
-      divClosers.innerHTML = '';
-      if(closers.length === 0) {
-         divClosers.innerHTML = '<span style="color:var(--red);font-size:12px;">Selecione o supervisor no topo da página.</span>';
-         return;
+      divClosers.innerHTML = ''; 
+      if(closers.length > 0) {
+        closers.forEach(nome => {
+          divClosers.innerHTML += `<label class="closer-check"><input type="checkbox" name="closers_${check.id}" value="${nome}"> ${nome}</label>`;
+        });
       }
-      closers.forEach(nome => {
-        divClosers.innerHTML += `<label class="closer-check"><input type="checkbox" name="closers_${check.id}" value="${nome}"> ${nome}</label>`;
-      });
     });
   });
 }
@@ -877,31 +889,56 @@ function buildEmailHTML(d) {
   const fc = farolColor[d.farol] || '#6b7280';
   const fl = farolLabel[d.farol] || 'Não informado';
 
-  let diagItems = '';
-  DIAG_CONFIG.forEach(b => b.checks.forEach(c => {
-    const val = d.diag[c.id];
-    const isSim = val !== 'Não';
-    diagItems += `<tr>
-      <td width="20" style="padding:10px 0; border-bottom:1px solid #1e2e50;">
-        <div style="width:14px;height:14px;border-radius:4px;background:${isSim?'#0065FF':'#115978'};"></div>
-      </td>
-      <td style="padding:10px 0; border-bottom:1px solid #1e2e50; font-size:14px; color:${isSim?'#ffffff':'#8c9bba'}">${c.label}</td>
-      <td align="right" style="padding:10px 0; border-bottom:1px solid #1e2e50; font-size:13px; font-weight:700; color:${isSim?'#FCD02B':'#8c9bba'}">${val}</td>
-    </tr>`;
-  }));
-
-  let acoesRows = '';
-  ACOES_CONFIG.forEach(g => g.checks.forEach(c => {
-    const ac = d.acao[c.id];
-    if(ac.ativa) {
-      acoesRows += `<tr>
-        <td style="padding:12px; border-bottom:1px solid #1e2e50; font-weight:600; color:#FCD02B">${c.label}</td>
-        <td style="padding:12px; border-bottom:1px solid #1e2e50; color:#e2e8f0">${ac.detalhe||'--'}</td>
-        <td style="padding:12px; border-bottom:1px solid #1e2e50; color:#e2e8f0">${ac.resultado||'--'}</td>
-        <td style="padding:12px; border-bottom:1px solid #1e2e50; color:#e2e8f0; white-space:nowrap">${dataBr(ac.prazo)}</td>
+  let diagCardsHTML = '';
+  DIAG_CONFIG.forEach(b => {
+    let blockRows = '';
+    b.checks.forEach(c => {
+      const val = d.diag[c.id];
+      const isSim = val !== 'Não';
+      blockRows += `<tr>
+        <td width="20" style="padding:10px 0; border-bottom:1px solid #1e2e50;">
+          <div style="width:14px;height:14px;border-radius:4px;background:${isSim?'#0065FF':'#115978'};"></div>
+        </td>
+        <td style="padding:10px 0; border-bottom:1px solid #1e2e50; font-size:14px; color:${isSim?'#ffffff':'#8c9bba'}">${c.label}</td>
+        <td align="right" style="padding:10px 0; border-bottom:1px solid #1e2e50; font-size:13px; font-weight:700; color:${isSim?'#FCD02B':'#8c9bba'}">${val}</td>
       </tr>`;
+    });
+    diagCardsHTML += `<div style="margin-bottom: 24px;">
+      <div style="font-size:13px; font-weight:700; color:#FCD02B; text-transform:uppercase; margin-bottom:12px;">${b.title}</div>
+      <table width="100%" cellpadding="0" cellspacing="0">${blockRows}</table>
+    </div>`;
+  });
+
+  let acoesCardsHTML = '';
+  let temAcoes = false;
+  ACOES_CONFIG.forEach(g => {
+    let blockRows = '';
+    g.checks.forEach(c => {
+      const ac = d.acao[c.id];
+      if(ac.ativa) {
+        temAcoes = true;
+        blockRows += `<tr>
+          <td style="padding:12px; border-bottom:1px solid #1e2e50; font-weight:600; color:#ffffff; width:35%">${c.label}</td>
+          <td style="padding:12px; border-bottom:1px solid #1e2e50; color:#e2e8f0; width:30%">${ac.detalhe||'--'}</td>
+          <td style="padding:12px; border-bottom:1px solid #1e2e50; color:#e2e8f0; width:20%">${ac.resultado||'--'}</td>
+          <td style="padding:12px; border-bottom:1px solid #1e2e50; color:#e2e8f0; white-space:nowrap; width:15%">${dataBr(ac.prazo)}</td>
+        </tr>`;
+      }
+    });
+    if(blockRows) {
+      acoesCardsHTML += `<div style="margin-bottom: 24px;">
+        <div style="font-size:13px; font-weight:700; color:#FCD02B; text-transform:uppercase; margin-bottom:12px;">${g.title}</div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; background:rgba(0,0,0,0.2); border-radius:8px; overflow:hidden;">
+          <thead><tr>
+            <th style="text-align:left;padding:12px;font-size:11px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Ação</th>
+            <th style="text-align:left;padding:12px;font-size:11px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Detalhe</th>
+            <th style="text-align:left;padding:12px;font-size:11px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Resultado</th>
+            <th style="text-align:left;padding:12px;font-size:11px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Prazo</th>
+          </tr></thead><tbody>${blockRows}</tbody>
+        </table>
+      </div>`;
     }
-  }));
+  });
 
   const formatCur = v => (v || v===0) ? 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '--';
   const formatPct = v => (v || v===0) ? (v*100).toLocaleString('pt-BR')+'%' : '--';
@@ -956,15 +993,8 @@ function buildEmailHTML(d) {
         ['Déficit Vol', d.deficitVol], ['Total Indicações', d.totalIndicacoes],
         ['Relógio Orçado', formatCur(d.metaRelogioOrcado)], ['Relógio Realizado', formatCur(d.metaRelogioRealizado)],
       ]))}
-      ${card('02','Diagnóstico (Ofensores)', `<table width="100%" cellpadding="0" cellspacing="0">${diagItems}</table>`)}
-      ${acoesRows ? card('03','Plano de Ação', `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
-        <thead><tr>
-          <th style="text-align:left;padding:10px 12px;font-size:12px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Ação</th>
-          <th style="text-align:left;padding:10px 12px;font-size:12px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Detalhe</th>
-          <th style="text-align:left;padding:10px 12px;font-size:12px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Resultado</th>
-          <th style="text-align:left;padding:10px 12px;font-size:12px;text-transform:uppercase;color:#8c9bba;border-bottom:1px solid #1e2e50">Prazo</th>
-        </tr></thead><tbody>${acoesRows}</tbody>
-      </table>`) : ''}
+      ${card('02','Diagnóstico (Ofensores)', diagCardsHTML)}
+      ${temAcoes ? card('03','Plano de Ação', acoesCardsHTML) : ''}
       ${card('04','Farol de Confiança', `<div style="text-align:center">
         <div style="display:inline-block;padding:14px 28px;border-radius:10px;font-size:16px;font-weight:800;border:2px solid ${fc};color:${fc};background:${fc}15">${fl}</div>
       </div>`)}
@@ -977,6 +1007,7 @@ function buildEmailHTML(d) {
 }
 
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzzUXcwPeiCSq_bjE2GR2eL-_GtaBF-IWLpHM8k0t_qczaR3CpzNwfEkTZ2g7U5ja0tiw/exec';
+const SENHA_TESTE = '7530';
 let isSubmitting = false;
 
 function showToast(msg, isWarn) {
@@ -1104,14 +1135,53 @@ document.getElementById('btnConfirmarEnvioReal').addEventListener('click', async
 });
 
 function abrirModalTeste() {
+  if (isSubmitting) return;
+  document.getElementById('inputSenhaTeste').value = '';
+  document.getElementById('erroSenhaTeste').textContent = '';
+  document.getElementById('inputSenhaTeste').classList.remove('error');
   abrirModal('modalTeste');
+  setTimeout(() => document.getElementById('inputSenhaTeste').focus(), 150);
 }
 
+document.getElementById('btnCancelarTeste').addEventListener('click', () => {
+  fecharModal('modalTeste');
+});
+
 document.getElementById('btnConfirmarTeste').addEventListener('click', async () => {
+  const senha = document.getElementById('inputSenhaTeste').value;
+  const erroEl = document.getElementById('erroSenhaTeste');
+  const inputEl = document.getElementById('inputSenhaTeste');
+
+  if (senha !== SENHA_TESTE) {
+    erroEl.textContent = 'Senha incorreta. Tente novamente.';
+    inputEl.classList.add('error');
+    inputEl.value = '';
+    setTimeout(() => {
+      inputEl.classList.remove('error');
+      inputEl.focus();
+    }, 600);
+    return;
+  }
+
   fecharModal('modalTeste');
   if (isSubmitting) return;
   isSubmitting = true;
   await enviar(montarPayload(true), true);
+});
+
+document.getElementById('inputSenhaTeste').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('btnConfirmarTeste').click();
+});
+
+document.querySelectorAll('.modal-backdrop').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this && !isSubmitting) fecharModal(this.id);
+  });
+});
+
+document.getElementById('btnCancelarDuplicado').addEventListener('click', () => {
+  fecharModal('modalDuplicado');
+  isSubmitting = false;
 });
 
 function resetForm(force) {
@@ -1127,7 +1197,9 @@ function resetForm(force) {
     
     document.querySelectorAll('.gaveta').forEach(g => g.classList.remove('open'));
     document.querySelectorAll('.acao-fields').forEach(f => f.classList.remove('open'));
-    atualizarListasClosers();
+    
+    atualizarListasClosers(); 
+    
     clearDraft(); 
     calcProgress();
   }
