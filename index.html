@@ -432,14 +432,22 @@ function maskMoeda(el) {
 }
 
 function maskPct(el) {
-  let v = el.value.replace(/\D/g, '');
-  if (!v) { el.value = ''; return; }
-  el.value = parseInt(v, 10) + '%';
-}
+  let v = el.value.replace(/[^\d,]/g, '');
+  
+  const partes = v.split(',');
+  if (partes.length > 2) {
+    v = partes[0] + ',' + partes.slice(1).join('');
+  }
 
-function maskInt(el) {
-  let v = el.value.replace(/\D/g, '');
-  el.value = v;
+  if (!v) { 
+    el.value = ''; 
+    return; 
+  }
+
+  el.value = v + '%';
+
+  const pos = el.value.length - 1;
+  el.setSelectionRange(pos, pos);
 }
 
 const CLOSERS = {
@@ -826,7 +834,8 @@ function extractCurrency(val) {
 }
 function extractPct(val) {
   if(!val) return '';
-  return parseFloat(val.replace('%', '')) / 100;
+  let n = val.replace('%', '').replace(',', '.');
+  return parseFloat(n) / 100;
 }
 function extractInt(val) {
   if(!val) return '';
